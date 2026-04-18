@@ -1,6 +1,6 @@
 # Current State
 
-> Last updated: 2026-04-18 (post-T3.7)
+> Last updated: 2026-04-18 (post-T3.8)
 
 ## Active Plan
 
@@ -27,7 +27,7 @@ Collapse `halcytone-contracts` + `halcytone-core` into this single public monore
 | T3.5 | Port + expand core tests | 4 | P0 | 3 | ✓ done | T3.3, T3.4 |
 | T3.6 | Unified CI workflow | 2 | P0 | 4 | ✓ done | T3.3, T3.5 |
 | T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | ✓ done | T3.5 |
-| T3.8 | README rewrite | 2 | P0 | 2 | pending | T3.1 |
+| T3.8 | README rewrite | 2 | P0 | 2 | ✓ done | T3.1 |
 | T3.9 | Commit + push + open PR | 2 | P0 | 5 | pending | T3.6, T3.7, T3.8 |
 | T3.10 | Post-merge: tag v0.3.0 + archive old repos | 2 | P1 | 6 | pending | T3.9 (merged) |
 | T3.11 | Local cleanup | 1 | P1 | 7 | pending | T3.10 |
@@ -64,6 +64,15 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 - **T3.9 → T3.10 cross-repo manual gate.** User merges, then tag + archive. No automation.
 
 ## What Was Just Done
+
+### Session: 2026-04-18 — T3.8 README rewrite (Driver)
+
+- Replaced the T3.1 stub `README.md` with a full monorepo-positioned rewrite. Lead sentence: "Biofeedback sonification platform. Monorepo with subpackages under `halcytone.*` …". Top-of-file links resolve to `ROADMAP.md` + `CHANGELOG.md`.
+- Added the 7-row `## Subpackages` table (contracts, core, sensors, audio, hud, breath, publish — each with role + status) replacing the old "Repo roster" table. Contracts is **Shipped (v0.3.0)**, core is **Stub (v0.3.0); real fusion in v0.4.0**, the five planned subpackages are **Planned** with target versions where known. Added a note that shipped subpackages re-export through the top-level `halcytone` namespace.
+- Install + quick-start block: `pip install 'halcytone @ git+https://github.com/fivedollarfridays/halcytone.git@v0.3.0'` plus a `from halcytone import SignalPacket, StateVector, SessionManifest, Baseline, SessionSummary, check_contract_version` example with `check_contract_version("0.3.0")` call.
+- Ported verbatim from the archived `halcytone-contracts` README: System shape (internal refs rewritten to `halcytone.core`/`halcytone.audio`/`halcytone.hud`/`halcytone.publish`), signal contract `SignalPacket`, stream naming convention + reserved-stream list (updated `halcytone-breath` → `halcytone.breath`), state contract `StateVector`, cadence, session protocol, control messages, storage (`halcytone.contracts.storage` DDL path), session bundle section (`halcytone.contracts.bundles` manifest path), non-goals.
+- Versioning section retained: 0.x sharpened semver table, pin recommendation **`halcytone>=0.3,<0.4`**, `check_contract_version` runtime pattern imported `from halcytone`, drift policy table, schema drift explanation pointing at `halcytone/contracts/bundles/manifest.schema.json`.
+- Gates: grep for `halcytone-contracts\|halcytone-core` → 1 match (the single "used to be separate repos" mention in §"Why this exists", per the AC "≤1" bound); grep for `halcytone\.contracts\|halcytone\.core` → 6 matches (≥4 AC); `halcytone>=0.3,<0.4` present once; 7 subpackage table rows; quick-start block + runtime check block both import `from halcytone`; no `7-repo fleet` / `seven-repo` language remains.
 
 ### Session: 2026-04-18 — T3.7 Unified CHANGELOG + ROADMAP (Driver)
 
