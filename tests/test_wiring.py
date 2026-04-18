@@ -332,6 +332,14 @@ def test_check_contract_version_raises_on_0_1_x_pin() -> None:
 def test_check_contract_version_passes_on_current_version() -> None:
     from halcytone import check_contract_version
 
+    # Guard: if the package bumps, this test would silently start exercising
+    # the pre-1.0 minor-mismatch branch instead of the exact-match no-op.
+    # Forcing the literal lets a version bump fail here loudly, prompting
+    # a deliberate re-author rather than a silent code-path switch.
+    assert halcytone.__contract_version__ == "0.3.0", (
+        "bump this test's literal along with __contract_version__"
+    )
+
     with warnings.catch_warnings():
         warnings.simplefilter("error")  # any warning → raise
         assert check_contract_version("0.3.0") is None
