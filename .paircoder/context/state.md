@@ -1,67 +1,128 @@
 # Current State
 
-> Last updated: <!-- Update after each session -->
+> Last updated: 2026-04-18 (post-T3.2)
 
 ## Active Plan
 
-**Plan:** None yet
-**Status:** Ready to start
-**Current Sprint:** N/A
+**Plan:** `plan-2026-04-sprint-3-monorepo-consolidation` — Sprint 3 — halcytone monorepo consolidation
+**Status:** In progress (T3.1 done in halcytone-contracts; T3.2+ run here)
+**Current Sprint:** sprint-3
+**Total Cx:** 28 across 11 tasks (P0 ×9, P1 ×2)
+**Source backlog:** `plans/backlogs/backlog-sprint-3.md`
 
 ## Current Focus
 
-Project initialized with PairCoder v2. Ready to create first plan.
+Collapse `halcytone-contracts` + `halcytone-core` into this single public monorepo `halcytone` (Apache-2.0) with src-layout subpackages (`halcytone.contracts`, `halcytone.core`, plus placeholders for sensors/audio/hud/breath/publish). Pure structural work — no new functionality, no fusion logic, no breaking schema changes. Ships as **v0.3.0** of the unified package. The only "break" is the import-path rename (`halcytone_contracts` → `halcytone.contracts`); we're the only consumer so this is safe.
 
 ## Task Status
 
-### Active Sprint
+### Active Sprint — sprint-3 (monorepo consolidation)
 
-No tasks yet. Create a plan to get started:
+| Task | Title | Cx | Pri | Wave | Status | Depends |
+|------|-------|----|-----|------|--------|---------|
+| T3.1 | Create `halcytone` repo + scaffold | 3 | P0 | 0 | ✓ done (in halcytone-contracts) | — |
+| T3.2 | Migrate contracts source → `halcytone.contracts` | 4 | P0 | 1 | ✓ done | T3.1 |
+| T3.3 | Port contracts tests + regen script | 3 | P0 | 2 | pending | T3.2 |
+| T3.4 | Migrate core source → `halcytone.core` | 3 | P0 | 2 | pending | T3.2 |
+| T3.5 | Port + expand core tests | 4 | P0 | 3 | pending | T3.3, T3.4 |
+| T3.6 | Unified CI workflow | 2 | P0 | 4 | pending | T3.3, T3.5 |
+| T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | pending | T3.5 |
+| T3.8 | README rewrite | 2 | P0 | 2 | pending | T3.1 |
+| T3.9 | Commit + push + open PR | 2 | P0 | 5 | pending | T3.6, T3.7, T3.8 |
+| T3.10 | Post-merge: tag v0.3.0 + archive old repos | 2 | P1 | 6 | pending | T3.9 (merged) |
+| T3.11 | Local cleanup | 1 | P1 | 7 | pending | T3.10 |
 
-```bash
-bpsai-pair plan new my-first-feature --type feature --title "My First Feature"
+### Dependency Graph
+
+```
+Wave 0: T3.1 ✓ (scaffold — done in halcytone-contracts)
+          ↓
+Wave 1: T3.2 (contracts source — blocker)
+          ↓
+Wave 2: T3.3    T3.4    T3.8         (parallel — tests / core / README)
+          ↓      ↓
+Wave 3:        T3.5                   (core tests + wiring expansion)
+                ↓
+Wave 4: T3.6    T3.7                  (parallel — CI / docs)
+                ↓
+Wave 5: T3.9                          (commit + push + PR)
+                ↓  (user merges)
+Wave 6: T3.10                         (tag + archive)
+                ↓
+Wave 7: T3.11                         (local cleanup)
 ```
 
-### Backlog
+### Cut Order if Budget Overflows
 
-Tasks deprioritized for later work will appear here.
+T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up session. Never cut T3.2–T3.9 — each is load-bearing.
+
+### Integration Points
+
+- **T3.2 → every downstream task.** `halcytone.contracts` is the foundation. Rename misses cascade into red tests (T3.3) and import failures (T3.4).
+- **T3.4 removes `_EXPECTED_CONTRACTS_VERSION` import-time check.** Monorepo = same-package drift is structurally impossible; the guard is dead code.
+- **T3.5 folds in deferred T2.6–T2.8 coverage** — this sprint becomes the forcing function that proves the typed manifest is consumable from a real caller.
+- **T3.9 → T3.10 cross-repo manual gate.** User merges, then tag + archive. No automation.
 
 ## What Was Just Done
 
-### Session: <!-- Date --> - Project Initialization
+### Session: 2026-04-18 — T3.2 Migrate contracts source → `halcytone.contracts` (Driver)
 
-- Initialized project with PairCoder v2
-- Created `.paircoder/` directory structure
-- Set up initial configuration
+- Copied all 10 source files (`signals.py`, `state.py`, `session.py`, `storage.py`, `drift.py`, `baseline.py`, `summary.py`, `__init__.py`, `bundles/__init__.py`, `bundles/manifest.py`) and 2 data artifacts (`storage.sql`, `bundles/manifest.schema.json`) from `halcytone-contracts/halcytone_contracts/` into `halcytone/contracts/`.
+- Rewrote every internal import `halcytone_contracts.X` → `halcytone.contracts.X` across the migrated source (baseline, bundles/__init__, bundles/manifest, state, storage, summary, drift, contracts/__init__) plus the embedded `halcytone_contracts.signals.RESERVED_STREAMS` doc reference in `baseline.py` docstring and `bundles/manifest.schema.json` description mirror. `grep -r halcytone_contracts halcytone/` → 0 matches.
+- Updated `storage.py`: `resources.files("halcytone_contracts")` → `resources.files("halcytone.contracts")` so DDL loads from the renamed package; verified `read_ddl()` returns 1440 bytes.
+- Bumped `halcytone/contracts/__init__.py` → `__contract_version__ = "0.3.0"` (preserves 25-name `__all__` parity with sprint-2 source, verified via set-diff vs. `halcytone_contracts.__all__`).
+- Rewrote `halcytone/__init__.py` to re-export the full surface from `halcytone.contracts` with explicit imports + `__all__` list (not star-import). `from halcytone import SignalPacket, Baseline, SessionManifest, __contract_version__` → "0.3.0".
+- `pyproject.toml` `[tool.setuptools.package-data]` added: `"halcytone.contracts" = ["*.sql"]`, `"halcytone.contracts.bundles" = ["*.json"]`.
+- Gates: `bpsai-pair arch check halcytone/` clean, `ruff check .` clean, smoke-import `SignalPacket(sensor_id="x", stream="eeg.ch1", t_ns=1, values=[0.1], quality=0.9)` succeeds, `pip install -e .` reinstalls cleanly.
 
-<!-- Add new session entries here as you complete work -->
+### Session: 2026-04-18 — T3.1 Create halcytone repo + scaffold (Driver, in halcytone-contracts)
+
+- Created public repo `fivedollarfridays/halcytone` via `gh repo create --public`; cloned to `/home/kmasty/projects/halcytone/` (this directory).
+- Scaffolded `pyproject.toml` (`halcytone@0.3.0`, Python ≥3.11, pydantic v2 + pyyaml, pytest + ruff dev extras, ruff line-length 100 + target py311, `include=["halcytone*"]`), src-layout skeleton (`halcytone/__init__.py` with `__version__ = "0.3.0"` + module docstring naming shipped vs. planned subpackages; empty `halcytone/contracts/__init__.py` + `halcytone/core/__init__.py` stubs), test harness (`tests/__init__.py`, `tests/conftest.py`).
+- Top-level: `LICENSE` (Apache 2.0), `.editorconfig`, `.gitignore`, stub `README.md` / `CHANGELOG.md` / `ROADMAP.md`, stub `.github/workflows/ci.yml`.
+- `bpsai-pair init --preset library` installed `.claude/`, `.paircoder/`, `CLAUDE.md`, `scripts/`. `AGENTS.md` written manually as a `.paircoder/` pointer.
+- Verified: `pip install -e '.[dev]'` clean, `pytest` 0-tests-0-failures green, `ruff check .` clean, `bpsai-pair validate` passes.
+- Initial commit `f2beda1` pushed to `origin/main`.
+- Planning artifacts (plan yaml, task files T3.2–T3.11, backlog) copied from halcytone-contracts into this repo's `.paircoder/plans/`, `.paircoder/tasks/`, and `plans/backlogs/` so `/start-task T3.2` can run here.
 
 ## What's Next
 
-1. Define your first feature or improvement
-2. Create a plan: `bpsai-pair plan new <slug>`
-3. Add tasks to the plan
-4. Start implementing!
+1. **Wave 2 (parallel, now unblocked):** T3.3 (tests port + regen script), T3.4 (core migration + drop `_EXPECTED_CONTRACTS_VERSION`), T3.8 (README rewrite).
+2. **Wave 3:** T3.5 (core tests + folded-in T2.6–T2.8 coverage).
+3. **Wave 4 (parallel):** T3.6 (unified CI workflow), T3.7 (real CHANGELOG + ROADMAP content).
+4. **Wave 5:** T3.9 (commit + push + open PR against `main`).
+5. **Post-merge (manual):** T3.10 tags v0.3.0 + archives `halcytone-contracts` and `halcytone-core`; T3.11 `rm -rf`s the old local working copies.
 
 ## Blockers
 
-None currently.
+None.
+
+## Out of Scope (documented in backlog)
+
+- Fusion logic in `halcytone.core` (v0.4.0).
+- `halcytone-broadcast` (private SaaS — separate future repo).
+- PyPI publishing (git dep stays the distribution model).
+- New sensor adapters / audio / hud / publish logic (placeholders only).
+- Paircoder template for sibling repos (moot in a monorepo).
+- Preserving git history from the two predecessor repos (archived repos retain their own).
 
 ## Quick Commands
 
 ```bash
-# Check status
+# Plan inspection
+bpsai-pair plan show plan-2026-04-sprint-3-monorepo-consolidation
+bpsai-pair task list --plan plan-2026-04-sprint-3-monorepo-consolidation
+
+# Start next task
+bpsai-pair task update T3.2 --status in_progress
+
+# Complete (non-Trello)
+bpsai-pair task update T3.X --status done
+
+# Verify gates locally
+pytest && ruff check .
+python scripts/regen_manifest_schema.py && git diff --exit-code halcytone/contracts/bundles/manifest.schema.json
+
+# Status
 bpsai-pair status
-
-# Create a new plan
-bpsai-pair plan new my-feature --type feature
-
-# List tasks
-bpsai-pair task list
-
-# Start working on a task
-bpsai-pair task update TASK-XXX --status in_progress
-
-# Complete a task (with Trello)
-bpsai-pair ttask done TRELLO-XX --summary "..." --list "Deployed/Done"
-bpsai-pair task update TASK-XXX --status done
+```

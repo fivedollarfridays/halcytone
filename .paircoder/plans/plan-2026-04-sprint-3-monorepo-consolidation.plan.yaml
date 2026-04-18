@@ -1,0 +1,13 @@
+id: plan-2026-04-sprint-3-monorepo-consolidation
+title: Sprint 3 — halcytone monorepo consolidation
+type: refactor
+status: in_progress
+created_at: '2026-04-18T02:12:42.972200'
+skills:
+- designing-and-implementing
+goals:
+- Collapse halcytone-contracts + halcytone-core into single public monorepo halcytone
+  (Apache-2.0), src-layout subpackages, ship as v0.3.0
+- Eliminate cross-repo pin/tag ceremony at single-dev scale
+metadata:
+  pm_scope: story
