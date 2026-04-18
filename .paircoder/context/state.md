@@ -1,6 +1,6 @@
 # Current State
 
-> Last updated: 2026-04-18 (post-T3.2)
+> Last updated: 2026-04-18 (post-T3.3)
 
 ## Active Plan
 
@@ -22,7 +22,7 @@ Collapse `halcytone-contracts` + `halcytone-core` into this single public monore
 |------|-------|----|-----|------|--------|---------|
 | T3.1 | Create `halcytone` repo + scaffold | 3 | P0 | 0 | ✓ done (in halcytone-contracts) | — |
 | T3.2 | Migrate contracts source → `halcytone.contracts` | 4 | P0 | 1 | ✓ done | T3.1 |
-| T3.3 | Port contracts tests + regen script | 3 | P0 | 2 | pending | T3.2 |
+| T3.3 | Port contracts tests + regen script | 3 | P0 | 2 | ✓ done | T3.2 |
 | T3.4 | Migrate core source → `halcytone.core` | 3 | P0 | 2 | pending | T3.2 |
 | T3.5 | Port + expand core tests | 4 | P0 | 3 | pending | T3.3, T3.4 |
 | T3.6 | Unified CI workflow | 2 | P0 | 4 | pending | T3.3, T3.5 |
@@ -65,6 +65,14 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 
 ## What Was Just Done
 
+### Session: 2026-04-18 — T3.3 Port contracts tests + regen script (Driver)
+
+- Copied all 10 `test_*.py` files from `halcytone-contracts/tests/` → `tests/` (baseline, drift, exports, manifest, package, session, signals, state, storage, summary).
+- Bulk-rewrote imports via scripted replace: `halcytone_contracts.X` → `halcytone.contracts.X`, `"halcytone_contracts"` → `"halcytone.contracts"` (importlib.resources calls), bare `halcytone_contracts` → `halcytone` (top-level package ref + `import halcytone_contracts as hc`).
+- Fixed two special cases the bulk rewrite couldn't resolve: `tests/test_manifest.py` `_SCHEMA_PATH` filesystem path rebuilt to `_REPO_ROOT / "halcytone" / "contracts" / "bundles" / "manifest.schema.json"`; `tests/test_storage.py` `from halcytone import storage` corrected to `from halcytone.contracts import storage` (submodule access, not re-export).
+- Copied `scripts/regen_manifest_schema.py` with `from halcytone.contracts.bundles.manifest import SessionManifest` and `_OUTPUT_PATH = _REPO_ROOT / "halcytone" / "contracts" / "bundles" / "manifest.schema.json"`.
+- Gates: `pytest -q` → **336 passed**, `python scripts/regen_manifest_schema.py && git diff --exit-code` on schema → clean (regen idempotent), `ruff check .` clean, `bpsai-pair arch check tests/ scripts/` clean. `grep -r halcytone_contracts halcytone/ tests/ scripts/` → 0 matches.
+
 ### Session: 2026-04-18 — T3.2 Migrate contracts source → `halcytone.contracts` (Driver)
 
 - Copied all 10 source files (`signals.py`, `state.py`, `session.py`, `storage.py`, `drift.py`, `baseline.py`, `summary.py`, `__init__.py`, `bundles/__init__.py`, `bundles/manifest.py`) and 2 data artifacts (`storage.sql`, `bundles/manifest.schema.json`) from `halcytone-contracts/halcytone_contracts/` into `halcytone/contracts/`.
@@ -87,7 +95,7 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 
 ## What's Next
 
-1. **Wave 2 (parallel, now unblocked):** T3.3 (tests port + regen script), T3.4 (core migration + drop `_EXPECTED_CONTRACTS_VERSION`), T3.8 (README rewrite).
+1. **Wave 2 remaining (parallel):** T3.4 (core migration + drop `_EXPECTED_CONTRACTS_VERSION`), T3.8 (README rewrite). T3.3 ✓ done.
 2. **Wave 3:** T3.5 (core tests + folded-in T2.6–T2.8 coverage).
 3. **Wave 4 (parallel):** T3.6 (unified CI workflow), T3.7 (real CHANGELOG + ROADMAP content).
 4. **Wave 5:** T3.9 (commit + push + open PR against `main`).
