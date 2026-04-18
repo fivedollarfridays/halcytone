@@ -1,6 +1,6 @@
 # Current State
 
-> Last updated: 2026-04-18 (post-T3.8)
+> Last updated: 2026-04-18 (post-T3.9)
 
 ## Active Plan
 
@@ -28,7 +28,7 @@ Collapse `halcytone-contracts` + `halcytone-core` into this single public monore
 | T3.6 | Unified CI workflow | 2 | P0 | 4 | ✓ done | T3.3, T3.5 |
 | T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | ✓ done | T3.5 |
 | T3.8 | README rewrite | 2 | P0 | 2 | ✓ done | T3.1 |
-| T3.9 | Commit + push + open PR | 2 | P0 | 5 | pending | T3.6, T3.7, T3.8 |
+| T3.9 | Commit + push + open PR | 2 | P0 | 5 | ✓ done (PR #1 open, CI green) | T3.6, T3.7, T3.8 |
 | T3.10 | Post-merge: tag v0.3.0 + archive old repos | 2 | P1 | 6 | pending | T3.9 (merged) |
 | T3.11 | Local cleanup | 1 | P1 | 7 | pending | T3.10 |
 
@@ -64,6 +64,14 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 - **T3.9 → T3.10 cross-repo manual gate.** User merges, then tag + archive. No automation.
 
 ## What Was Just Done
+
+### Session: 2026-04-18 — T3.9 Commit + push + open PR (Driver)
+
+- T3.2–T3.8 had each been committed directly to local `main` during their respective task-complete workflows (the `bpsai-pair task update --status done` gate requires a commit). `origin/main` was still at `f2beda1` (T3.1 scaffold). Reorg'd the branch topology to match T3.9's spec: created `engage/backlog-sprint-3` from local HEAD (preserving all 14 T3.2–T3.8 commits including bookkeeping), then `git branch -f main origin/main` to realign local main back to the scaffold. No force-push needed — `origin/main` was untouched throughout.
+- Pre-push gates clean: `pytest` → 357 passed, `ruff check .` clean, `bpsai-pair security scan-secrets` → "No secrets detected in project", diff-level `grep -iE "(api[_-]?key|password|secret=|token=|bearer|-----BEGIN)"` only matched the grep command's own text in the T3.9 task spec (meta, not a real secret).
+- Pushed `engage/backlog-sprint-3` to `origin`. Opened [PR #1](https://github.com/fivedollarfridays/halcytone/pull/1) titled "v0.3.0 — halcytone monorepo consolidation" with a summary, the full Migration snippet from `CHANGELOG.md`, and a 5-job test plan checklist.
+- **CI run 24609820183 — all 5 jobs green:** `lint` ✓, `test (3.11)` ✓, `test (3.12)` ✓, `test (3.13)` ✓, `schema-drift` ✓. Total wall time ≈ 20s matching the halcytone-contracts baseline. Only annotations are the Node.js 20 deprecation warnings on `actions/checkout@v4` + `actions/setup-python@v5` — identical to what halcytone-contracts v0.2.0 emits with the same action versions, so "no new CI warnings vs. baseline" holds.
+- PR is ready for user review + merge. Post-merge work (T3.10, T3.11) is gated on manual merge of PR #1 into `main`.
 
 ### Session: 2026-04-18 — T3.8 README rewrite (Driver)
 
@@ -141,7 +149,7 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 1. **Wave 2 remaining:** T3.8 (README rewrite). T3.3 + T3.4 ✓ done.
 2. **Wave 3:** T3.5 ✓ done (357-test suite green).
 3. **Wave 4:** ✓ done (T3.6 + T3.7).
-4. **Wave 5:** T3.9 (commit + push + open PR against `main`).
+4. **Wave 5:** ✓ T3.9 done — [PR #1](https://github.com/fivedollarfridays/halcytone/pull/1) open with CI green; awaiting user merge.
 5. **Post-merge (manual):** T3.10 tags v0.3.0 + archives `halcytone-contracts` and `halcytone-core`; T3.11 `rm -rf`s the old local working copies.
 
 ## Blockers
