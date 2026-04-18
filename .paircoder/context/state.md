@@ -1,6 +1,6 @@
 # Current State
 
-> Last updated: 2026-04-18 (post-T3.3)
+> Last updated: 2026-04-18 (post-T3.4)
 
 ## Active Plan
 
@@ -23,7 +23,7 @@ Collapse `halcytone-contracts` + `halcytone-core` into this single public monore
 | T3.1 | Create `halcytone` repo + scaffold | 3 | P0 | 0 | ✓ done (in halcytone-contracts) | — |
 | T3.2 | Migrate contracts source → `halcytone.contracts` | 4 | P0 | 1 | ✓ done | T3.1 |
 | T3.3 | Port contracts tests + regen script | 3 | P0 | 2 | ✓ done | T3.2 |
-| T3.4 | Migrate core source → `halcytone.core` | 3 | P0 | 2 | pending | T3.2 |
+| T3.4 | Migrate core source → `halcytone.core` | 3 | P0 | 2 | ✓ done | T3.2 |
 | T3.5 | Port + expand core tests | 4 | P0 | 3 | pending | T3.3, T3.4 |
 | T3.6 | Unified CI workflow | 2 | P0 | 4 | pending | T3.3, T3.5 |
 | T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | pending | T3.5 |
@@ -65,6 +65,13 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 
 ## What Was Just Done
 
+### Session: 2026-04-18 — T3.4 Migrate core source → `halcytone.core` (Driver)
+
+- Wrote `halcytone/core/__init__.py` as the monorepo-native `halcytone.core` header: `__version__ = "0.3.0"`, module docstring rephrased to call out monorepo-implicit lockstep with `halcytone.contracts`. **Dropped** `_EXPECTED_CONTRACTS_VERSION` + the import-time `check_contract_version(...)` call — same-package drift is structurally impossible, the guard is dead code. The `check_contract_version` import is gone too.
+- Wrote `halcytone/core/wiring.py` by porting `halcytone-core/halcytone_core/wiring.py`: imports from `halcytone.contracts` (not `halcytone_contracts`), docstring + `expected_streams()` doc refs updated to `halcytone.core` v0.3.0 / v0.4.0 timeline.
+- Expanded `PUBLIC_SURFACE` tuple to include the v0.2.0 additions (`Baseline`, `StreamBaseline`, `SessionSummary`) alongside the original 16 entries — final size **19**, which the canceled core-sprint-2 was supposed to land.
+- Gates: `from halcytone.core.wiring import PUBLIC_SURFACE` → size 19, `halcytone.core.__version__` → "0.3.0", `validate_publisher_roster(expected_streams())` passes, `bpsai-pair arch check halcytone/core/` clean, `ruff check .` clean, `pytest` → 336 passed unchanged (contracts tests unaffected; core tests land in T3.5). `grep -r halcytone_contracts\|_EXPECTED_CONTRACTS_VERSION halcytone/` → 0 matches.
+
 ### Session: 2026-04-18 — T3.3 Port contracts tests + regen script (Driver)
 
 - Copied all 10 `test_*.py` files from `halcytone-contracts/tests/` → `tests/` (baseline, drift, exports, manifest, package, session, signals, state, storage, summary).
@@ -95,8 +102,8 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 
 ## What's Next
 
-1. **Wave 2 remaining (parallel):** T3.4 (core migration + drop `_EXPECTED_CONTRACTS_VERSION`), T3.8 (README rewrite). T3.3 ✓ done.
-2. **Wave 3:** T3.5 (core tests + folded-in T2.6–T2.8 coverage).
+1. **Wave 2 remaining:** T3.8 (README rewrite). T3.3 + T3.4 ✓ done.
+2. **Wave 3:** T3.5 (core tests + folded-in T2.6–T2.8 coverage) — now unblocked once T3.8 runs (or can run in parallel with T3.8 since it only depends on T3.3 + T3.4).
 3. **Wave 4 (parallel):** T3.6 (unified CI workflow), T3.7 (real CHANGELOG + ROADMAP content).
 4. **Wave 5:** T3.9 (commit + push + open PR against `main`).
 5. **Post-merge (manual):** T3.10 tags v0.3.0 + archives `halcytone-contracts` and `halcytone-core`; T3.11 `rm -rf`s the old local working copies.
