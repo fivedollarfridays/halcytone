@@ -1,6 +1,6 @@
 # Current State
 
-> Last updated: 2026-04-18 (post-T3.4)
+> Last updated: 2026-04-18 (post-T3.5)
 
 ## Active Plan
 
@@ -24,7 +24,7 @@ Collapse `halcytone-contracts` + `halcytone-core` into this single public monore
 | T3.2 | Migrate contracts source → `halcytone.contracts` | 4 | P0 | 1 | ✓ done | T3.1 |
 | T3.3 | Port contracts tests + regen script | 3 | P0 | 2 | ✓ done | T3.2 |
 | T3.4 | Migrate core source → `halcytone.core` | 3 | P0 | 2 | ✓ done | T3.2 |
-| T3.5 | Port + expand core tests | 4 | P0 | 3 | pending | T3.3, T3.4 |
+| T3.5 | Port + expand core tests | 4 | P0 | 3 | ✓ done | T3.3, T3.4 |
 | T3.6 | Unified CI workflow | 2 | P0 | 4 | pending | T3.3, T3.5 |
 | T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | pending | T3.5 |
 | T3.8 | README rewrite | 2 | P0 | 2 | pending | T3.1 |
@@ -65,6 +65,19 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 
 ## What Was Just Done
 
+### Session: 2026-04-18 — T3.5 Port + expand core tests (Driver)
+
+- Wrote `tests/test_wiring.py` by porting the 14 sprint-1 `halcytone-core/tests/test_wiring.py` tests with imports rewritten: `import halcytone_core` → `import halcytone.core`, `from halcytone_core.wiring` → `from halcytone.core.wiring`, `from halcytone_contracts import X` → `from halcytone import X`. Version assertion retargeted `"0.1.0"` → `"0.3.0"`.
+- Reframed the obsolete `test_contract_version_pin_is_consistent` (which referenced the now-deleted `_EXPECTED_CONTRACTS_VERSION`) as `test_versions_in_monorepo_lockstep` — asserts `halcytone.__version__ == halcytone.core.__version__ == halcytone.__contract_version__`, the real post-monorepo invariant.
+- Fixed the sprint-1 `test_session_manifest_validates_session_id` for the v0.2.0 typed-manifest shape: added `_example_baseline()`, `_example_summary()`, `_example_manifest_payload()` fixtures (3 reserved streams, all 9 summary numerics) and split into `accepts_valid` / `rejects_invalid`. Also split `test_storage_ddl_applies_to_in_memory_sqlite` into `creates_expected_tables` + `is_idempotent`.
+- Folded in the 4 T2.6–T2.8 tests the canceled core-sprint-2 was supposed to land:
+  - `test_session_manifest_full_typed_payload_round_trips` — full manifest (3-stream baseline + 9-field summary) dumps JSON and re-parses equal.
+  - `test_baseline_rejects_unknown_stream_through_manifest` — `"not.a.real.stream"` in `Baseline.streams` raises `ValidationError` whose message names the offender.
+  - `test_check_contract_version_raises_on_0_1_x_pin` — `check_contract_version("0.1.0")` → `ContractError` containing `"pre-1.0"`.
+  - `test_check_contract_version_passes_on_current_version` — `check_contract_version("0.3.0")` is a no-op under `warnings.catch_warnings(simplefilter="error")`.
+- Also added `test_public_surface_includes_v0_2_0_additions` to lock in T3.4's tuple expansion (`Baseline`, `StreamBaseline`, `SessionSummary` in `PUBLIC_SURFACE`).
+- Gates: `pytest tests/test_wiring.py -v` → **21 passed**, full `pytest` → **357 passed** (336 contracts + 21 wiring; exceeds the ≥356 AC), `ruff check .` clean after auto-fix of import ordering, `bpsai-pair arch check tests/` clean, `grep halcytone_core\|halcytone_contracts tests/test_wiring.py` clean.
+
 ### Session: 2026-04-18 — T3.4 Migrate core source → `halcytone.core` (Driver)
 
 - Wrote `halcytone/core/__init__.py` as the monorepo-native `halcytone.core` header: `__version__ = "0.3.0"`, module docstring rephrased to call out monorepo-implicit lockstep with `halcytone.contracts`. **Dropped** `_EXPECTED_CONTRACTS_VERSION` + the import-time `check_contract_version(...)` call — same-package drift is structurally impossible, the guard is dead code. The `check_contract_version` import is gone too.
@@ -103,8 +116,8 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 ## What's Next
 
 1. **Wave 2 remaining:** T3.8 (README rewrite). T3.3 + T3.4 ✓ done.
-2. **Wave 3:** T3.5 (core tests + folded-in T2.6–T2.8 coverage) — now unblocked once T3.8 runs (or can run in parallel with T3.8 since it only depends on T3.3 + T3.4).
-3. **Wave 4 (parallel):** T3.6 (unified CI workflow), T3.7 (real CHANGELOG + ROADMAP content).
+2. **Wave 3:** T3.5 ✓ done (357-test suite green).
+3. **Wave 4 (parallel, unblocked):** T3.6 (unified CI workflow), T3.7 (real CHANGELOG + ROADMAP content).
 4. **Wave 5:** T3.9 (commit + push + open PR against `main`).
 5. **Post-merge (manual):** T3.10 tags v0.3.0 + archives `halcytone-contracts` and `halcytone-core`; T3.11 `rm -rf`s the old local working copies.
 
