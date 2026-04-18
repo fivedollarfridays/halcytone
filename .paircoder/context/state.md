@@ -1,6 +1,6 @@
 # Current State
 
-> Last updated: 2026-04-18 (post-T3.6)
+> Last updated: 2026-04-18 (post-T3.7)
 
 ## Active Plan
 
@@ -26,7 +26,7 @@ Collapse `halcytone-contracts` + `halcytone-core` into this single public monore
 | T3.4 | Migrate core source → `halcytone.core` | 3 | P0 | 2 | ✓ done | T3.2 |
 | T3.5 | Port + expand core tests | 4 | P0 | 3 | ✓ done | T3.3, T3.4 |
 | T3.6 | Unified CI workflow | 2 | P0 | 4 | ✓ done | T3.3, T3.5 |
-| T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | pending | T3.5 |
+| T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | ✓ done | T3.5 |
 | T3.8 | README rewrite | 2 | P0 | 2 | pending | T3.1 |
 | T3.9 | Commit + push + open PR | 2 | P0 | 5 | pending | T3.6, T3.7, T3.8 |
 | T3.10 | Post-merge: tag v0.3.0 + archive old repos | 2 | P1 | 6 | pending | T3.9 (merged) |
@@ -64,6 +64,12 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 - **T3.9 → T3.10 cross-repo manual gate.** User merges, then tag + archive. No automation.
 
 ## What Was Just Done
+
+### Session: 2026-04-18 — T3.7 Unified CHANGELOG + ROADMAP (Driver)
+
+- Wrote real content for `CHANGELOG.md` (Keep-a-Changelog v1.1.0): `[Unreleased]` header, a `## [0.3.0] — 2026-04-18` section with `### Changed` / `### Added` / `### Migration` subsections, and historical `## [0.2.0]`, `## [0.1.1]`, `## [0.1.0]` sections each annotated `(halcytone-contracts, archived)`. The Migration block lists the codebase-wide import rewrite, the pin replacement (`halcytone-contracts`/`halcytone-core` git deps out → `halcytone @ git+...@v0.3.0` or `halcytone>=0.3,<0.4`), and the `check_contract_version("0.1.x"|"0.2.x")` hard-fail behavior.
+- Wrote `ROADMAP.md` with 8 `## ` bands: v0.1.0, v0.1.1, v0.2.0 all `shipped (pre-consolidation)` with archived-repo pointers; v0.3.0 `shipped (this release, monorepo consolidation)` summarizing what T3.2–T3.6 landed; v0.4.0 narrowed to fusion logic (state machine, LSL ingest, 200 Hz StateVector emit, bundle writer, DDL bootstrapper); v0.5.0 to "second consumer" (sensors or audio, decide at v0.4.0 ship); v1.0.0 stability target; `## Out of scope` covering PyPI, git-history preservation, broadcast SaaS, and the now-moot sibling-repo paircoder template.
+- Both files link the archived predecessor repos (`halcytone-contracts`, `halcytone-core`). Verified AC by grep: CHANGELOG 6 `## ` headings (≥5), ROADMAP 8 `## ` headings (≥7), "archived" appears 10× across the two files, no stale "7-repo fleet" / "halcytone-contracts as separate repo" language.
 
 ### Session: 2026-04-18 — T3.6 Unified CI workflow (Driver)
 
@@ -125,7 +131,7 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 
 1. **Wave 2 remaining:** T3.8 (README rewrite). T3.3 + T3.4 ✓ done.
 2. **Wave 3:** T3.5 ✓ done (357-test suite green).
-3. **Wave 4 remaining:** T3.7 (real CHANGELOG + ROADMAP content). T3.6 ✓ done.
+3. **Wave 4:** ✓ done (T3.6 + T3.7).
 4. **Wave 5:** T3.9 (commit + push + open PR against `main`).
 5. **Post-merge (manual):** T3.10 tags v0.3.0 + archives `halcytone-contracts` and `halcytone-core`; T3.11 `rm -rf`s the old local working copies.
 
