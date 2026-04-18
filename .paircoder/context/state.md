@@ -1,6 +1,6 @@
 # Current State
 
-> Last updated: 2026-04-18 (post-T3.5)
+> Last updated: 2026-04-18 (post-T3.6)
 
 ## Active Plan
 
@@ -25,7 +25,7 @@ Collapse `halcytone-contracts` + `halcytone-core` into this single public monore
 | T3.3 | Port contracts tests + regen script | 3 | P0 | 2 | ✓ done | T3.2 |
 | T3.4 | Migrate core source → `halcytone.core` | 3 | P0 | 2 | ✓ done | T3.2 |
 | T3.5 | Port + expand core tests | 4 | P0 | 3 | ✓ done | T3.3, T3.4 |
-| T3.6 | Unified CI workflow | 2 | P0 | 4 | pending | T3.3, T3.5 |
+| T3.6 | Unified CI workflow | 2 | P0 | 4 | ✓ done | T3.3, T3.5 |
 | T3.7 | Unified CHANGELOG + ROADMAP | 2 | P0 | 4 | pending | T3.5 |
 | T3.8 | README rewrite | 2 | P0 | 2 | pending | T3.1 |
 | T3.9 | Commit + push + open PR | 2 | P0 | 5 | pending | T3.6, T3.7, T3.8 |
@@ -64,6 +64,14 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 - **T3.9 → T3.10 cross-repo manual gate.** User merges, then tag + archive. No automation.
 
 ## What Was Just Done
+
+### Session: 2026-04-18 — T3.6 Unified CI workflow (Driver)
+
+- Replaced the T3.1 stub `.github/workflows/ci.yml` with a production workflow modeled on `halcytone-contracts/.github/workflows/ci.yml`: three jobs (`lint`, `test`, `schema-drift`), push + PR triggers on `main`, concurrency group `ci-${{ github.ref }}` with `cancel-in-progress: true`.
+- `lint`: `actions/checkout@v4` + `actions/setup-python@v5` (3.11, pip-cached on `pyproject.toml`) + `pip install ruff` + `ruff check .`.
+- `test`: `fail-fast: false` matrix over Python 3.11/3.12/3.13, `pip install -e '.[dev]'` (single-quoted to survive zsh glob interpretation) + `pytest -q`. `[dev]` extras pull in `pytest`/`ruff`; base install would fail `pytest` on runners without them.
+- `schema-drift`: setup-python 3.11, `pip install -e .`, `python scripts/regen_manifest_schema.py`, then `git diff --exit-code halcytone/contracts/bundles/manifest.schema.json` — fails the job if the committed schema is stale vs. the pydantic model.
+- Gates: `yaml.safe_load` parses cleanly; jobs set == `{lint, test, schema-drift}`; concurrency group + cancel-in-progress present; test matrix == `[3.11, 3.12, 3.13]`; `fail-fast: false`; no `token:` / `ssh-key:` / `repository:` attributes on any `actions/checkout` step. Dry-run deferred — first real CI signal lands when T3.9 pushes the PR.
 
 ### Session: 2026-04-18 — T3.5 Port + expand core tests (Driver)
 
@@ -117,7 +125,7 @@ T3.11 → T3.10. Both are post-merge housekeeping that can slip to a follow-up s
 
 1. **Wave 2 remaining:** T3.8 (README rewrite). T3.3 + T3.4 ✓ done.
 2. **Wave 3:** T3.5 ✓ done (357-test suite green).
-3. **Wave 4 (parallel, unblocked):** T3.6 (unified CI workflow), T3.7 (real CHANGELOG + ROADMAP content).
+3. **Wave 4 remaining:** T3.7 (real CHANGELOG + ROADMAP content). T3.6 ✓ done.
 4. **Wave 5:** T3.9 (commit + push + open PR against `main`).
 5. **Post-merge (manual):** T3.10 tags v0.3.0 + archives `halcytone-contracts` and `halcytone-core`; T3.11 `rm -rf`s the old local working copies.
 
