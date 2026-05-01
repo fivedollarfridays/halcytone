@@ -1,4 +1,4 @@
-version: 2.25.2
+version: 2.25.3
 project:
   name: halcytone
   description: halcytone project
@@ -45,6 +45,9 @@ models:
       - claude-haiku-4-5
       default_effort: medium
   vaivora: claude-opus-4-6
+  bellona: claude-sonnet-4-6
+  divona: claude-sonnet-4-6
+  laverna: claude-sonnet-4-6
 routing:
   by_complexity:
     trivial:
