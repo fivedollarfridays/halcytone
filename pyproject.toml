@@ -35,6 +35,10 @@ where = ["."]
 include = ["halcytone*"]
 exclude = ["tests*"]
 
+[tool.setuptools.package-data]
+"halcytone.contracts" = ["*.sql"]
+"halcytone.contracts.bundles" = ["*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
